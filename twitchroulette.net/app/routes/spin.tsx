@@ -34,8 +34,6 @@ export default function Spin() {
   const loaderData = useLoaderData<typeof loader>();
   const { stream } = loaderData;
 
-  console.log("stream", stream);
-
   return (
     <div className="flex flex-col text-slate-100 w-full h-full">
       <div className="flex flex-row w-full h-16 bg-slate-700 justify-between">
