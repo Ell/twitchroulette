@@ -1,0 +1,7 @@
+name = "twitch-scraper"
+main = "src/worker.ts"
+compatibility_date = "2023-05-15"
+
+kv_namespaces = [
+	{ binding = "TWITCH_KV", id = "f4beb15c451a40b89a317d01e985683f", preview_id = "9ed5e5614f284218b3680cc4da1392e8" }
+]
