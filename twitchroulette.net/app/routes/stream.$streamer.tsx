@@ -5,10 +5,12 @@ import type {
 } from "@remix-run/cloudflare";
 import { json } from "@remix-run/cloudflare";
 import ReactTwitchEmbedVideo from "react-twitch-embed-video";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 
 import type { ChannelTag } from "~/twitch";
 import { getStream } from "~/twitch";
+import type { KeyboardEvent, KeyboardEventHandler } from "react";
+import { useCallback, useEffect } from "react";
 
 export const meta: V2_MetaFunction = () => {
   return [
@@ -33,6 +35,27 @@ export const loader: LoaderFunction = async (args: LoaderArgs) => {
 export default function Stream() {
   const loaderData = useLoaderData<typeof loader>();
   const { stream } = loaderData;
+
+  const navigate = useNavigate();
+
+  const handleKeyPress = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.code === "KeyR") {
+        navigate("/spin");
+      }
+    },
+    [navigate]
+  );
+
+  useEffect(() => {
+    // @ts-ignore
+    document.addEventListener("keydown", handleKeyPress);
+
+    return () => {
+      // @ts-ignore
+      document.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [handleKeyPress]);
 
   return (
     <div className="flex flex-col text-slate-100 w-full h-full">
