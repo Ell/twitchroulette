@@ -5,7 +5,8 @@ import Select from "react-select";
 import type { ChannelTag, Game } from "~/twitch";
 
 export type FilterSet = {
-  gameBlackList: Game[];
+  gameBlackList: (Game | null)[];
+  gameWhiteList: (Game | null)[];
   tagBlackList: ChannelTag[];
 };
 
@@ -22,7 +23,7 @@ export function FilterSelectModal({
   games,
   tags,
   onFilterSetSaved,
-  filterSet = { gameBlackList: [], tagBlackList: [] },
+  filterSet = { gameBlackList: [], tagBlackList: [], gameWhiteList: [] },
 }: FilterSelectModalProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [currentFilterSet, setCurrentFilterSet] =
@@ -41,26 +42,56 @@ export function FilterSelectModal({
     setIsOpen(true);
   }
 
-  const gameOptions = games.map((game) => {
-    return {
-      value: game,
-      label: game.name,
-    };
-  });
+  const gameOptions: { value: Game | null; label: string }[] = games.map(
+    (game) => {
+      return {
+        value: game,
+        label: game.name,
+      };
+    }
+  );
+  gameOptions.push({ value: null, label: "No Game" });
 
   const selectedGameOptions = currentFilterSet.gameBlackList.map((game) => {
     return {
       value: game,
-      label: game.name,
+      label: game?.name ?? "No Game",
     };
   });
 
   function onGameSelectChange(
-    option: readonly { value: Game; label: string }[]
+    option: readonly { value: Game | null; label: string }[]
   ) {
     setCurrentFilterSet({
       ...currentFilterSet,
       gameBlackList: [...option.map((o) => o.value)],
+    });
+  }
+
+  const whitelistGameOptions: { value: Game | null; label: string }[] =
+    games.map((game) => {
+      return {
+        value: game,
+        label: game.name,
+      };
+    });
+  whitelistGameOptions.push({ value: null, label: "No Game" });
+
+  const selectedWhitelistGameOptions = currentFilterSet.gameWhiteList.map(
+    (game) => {
+      return {
+        value: game,
+        label: game?.name ?? "No Game",
+      };
+    }
+  );
+
+  function onWhitelistGameSelectChange(
+    option: readonly { value: Game | null; label: string }[]
+  ) {
+    setCurrentFilterSet({
+      ...currentFilterSet,
+      gameWhiteList: [...option.map((o) => o.value)],
     });
   }
 
@@ -133,6 +164,25 @@ export function FilterSelectModal({
                   </Dialog.Title>
 
                   <div className="flex flex-col mt-8">
+                    <div className="sm:col-span-4 mt-2 mb-7">
+                      <label
+                        htmlFor="whitelistGames"
+                        className="block text-sm font-medium leading-6"
+                      >
+                        Whitelist Games
+                      </label>
+                      <div className="mt-2">
+                        <Select
+                          isMulti
+                          name="whitelistGames"
+                          defaultValue={selectedWhitelistGameOptions}
+                          options={whitelistGameOptions}
+                          className="basic-multi-select"
+                          classNamePrefix="select"
+                          onChange={onWhitelistGameSelectChange}
+                        />
+                      </div>
+                    </div>
                     <div className="sm:col-span-4">
                       <label
                         htmlFor="games"
@@ -154,7 +204,7 @@ export function FilterSelectModal({
                     </div>
                     <div className="mt-8">
                       <label
-                        htmlFor="games"
+                        htmlFor="tags"
                         className="block text-sm font-medium leading-6"
                       >
                         Blacklist Tags

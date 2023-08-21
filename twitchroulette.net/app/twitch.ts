@@ -57,7 +57,7 @@ export async function getStreams(kv: KVNamespace): Promise<Node[]> {
 }
 
 function applyStreamFilters(filters: FilterSet, streams: Node[]): Node[] {
-  if (filters.tagBlackList) {
+  if (filters.tagBlackList.length > 0) {
     const filterNames = filters.tagBlackList.map((filter) => filter.name);
 
     streams = streams.filter((stream) => {
@@ -77,12 +77,20 @@ function applyStreamFilters(filters: FilterSet, streams: Node[]): Node[] {
     });
   }
 
-  if (filters.gameBlackList) {
-    const filterIds = filters.gameBlackList.map((filter) => filter.id);
+  if (filters.gameBlackList.length > 0) {
+    const filterIds = filters.gameBlackList.map((filter) => filter?.id ?? null);
 
     streams = streams.filter((stream) => {
-      return !filterIds.includes(stream.id);
+      return !filterIds.includes(stream.game?.id);
     });
+  }
+
+  if (filters.gameWhiteList.length > 0) {
+    const filterIds = filters.gameWhiteList.map((filter) => filter?.id ?? null);
+
+    streams = streams.filter((stream) =>
+      filterIds.includes(stream.game?.id ?? null)
+    );
   }
 
   return streams;
@@ -91,7 +99,7 @@ function applyStreamFilters(filters: FilterSet, streams: Node[]): Node[] {
 export async function getRandomStream(
   kv: KVNamespace,
   filters?: FilterSet
-): Promise<Node> {
+): Promise<Node | undefined> {
   let streams = await getStreams(kv);
 
   if (filters) {
@@ -99,4 +107,13 @@ export async function getRandomStream(
   }
 
   return streams[Math.floor(Math.random() * streams.length)];
+}
+
+export async function getStream(
+  kv: KVNamespace,
+  streamer: string
+): Promise<Node | undefined> {
+  const streams = await getStreams(kv);
+
+  return streams.find((stream) => stream.broadcaster.login === streamer);
 }
